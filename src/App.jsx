@@ -115,7 +115,7 @@ function App() {
     setVideoUrl('');
 
     try {
-      const response = await axios.post('https://669a-34-125-226-90.ngrok-free.app/submit', {
+      const response = await axios.post('https://7870-34-125-226-90.ngrok-free.app/submit', {
         youtube_url: youtubeUrl,
         target_lang: targetLang
       });
