@@ -13,7 +13,7 @@ function App() {
     setVideoUrl('');
 
     try {
-      const response = await axios.post('https://8f64-34-143-200-8.ngrok-free.app/submit', {
+      const response = await axios.post('https://5c57-34-125-88-180.ngrok-free.app/submit', {
         youtube_url: youtubeUrl,
         target_lang: targetLang
       });
@@ -115,7 +115,7 @@ function App() {
     setVideoUrl('');
 
     try {
-      const response = await axios.post('https://1d31-35-231-113-228.ngrok-free.app/submit', {
+      const response = await axios.post('https://5c57-34-125-88-180.ngrok-free.app/submit', {
         youtube_url: youtubeUrl,
         target_lang: targetLang
       });
