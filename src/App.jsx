@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './App.css';
 
-const BASE_URL = 'https://5578-34-138-211-45.ngrok-free.app';
+const BASE_URL = 'https://aca6-34-138-211-45.ngrok-free.app';
 
 function App() {
   const [youtubeUrl, setYoutubeUrl] = useState('');
