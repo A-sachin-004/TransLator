@@ -1,113 +1,34 @@
-/* import React, { useState } from 'react';
-import axios from 'axios';
-
-function App() {
-  const [youtubeUrl, setYoutubeUrl] = useState('');
-  const [targetLang, setTargetLang] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [videoUrl, setVideoUrl] = useState('');
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setVideoUrl('');
-
-    try {
-      const response = await axios.post('https://c7fb-34-125-88-180.ngrok-free.app/submit', {
-        youtube_url: youtubeUrl,
-        target_lang: targetLang
-      });
-
-      setVideoUrl(response.data.video_url);
-    } catch (error) {
-      console.error('Error submitting:', error);
-      alert('Something went wrong. Please check console.');
-    }
-
-    setLoading(false);
-  };
-
-  return (
-    <div style={styles.container}>
-      <h1>Lip-Sync Video Translator 🎬</h1>
-
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <input
-          type="text"
-          placeholder="Enter YouTube URL"
-          value={youtubeUrl}
-          onChange={(e) => setYoutubeUrl(e.target.value)}
-          style={styles.input}
-          required
-        />
-
-        <input
-          type="text"
-          placeholder="Target Language Code (e.g., fr, de, es)"
-          value={targetLang}
-          onChange={(e) => setTargetLang(e.target.value)}
-          style={styles.input}
-          required
-        />
-
-        <button type="submit" style={styles.button} disabled={loading}>
-          {loading ? 'Processing...' : 'Submit'}
-        </button>
-      </form>
-
-      {videoUrl && (
-        <div style={styles.videoContainer}>
-          <h2>Translated Lip-Synced Video:</h2>
-          <video controls width="500" src={videoUrl} />
-          <p><a href={videoUrl} download>Download Video</a></p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-const styles = {
-  container: {
-    padding: 30,
-    textAlign: 'center',
-    fontFamily: 'Arial, sans-serif'
-  },
-  form: {
-    margin: '20px 0'
-  },
-  input: {
-    padding: 10,
-    margin: 10,
-    width: 300,
-    borderRadius: 5,
-    border: '1px solid #ccc'
-  },
-  button: {
-    padding: 10,
-    margin: 10,
-    width: 150,
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    border: 'none',
-    borderRadius: 5,
-    cursor: 'pointer'
-  },
-  videoContainer: {
-    marginTop: 30
-  }
-};
-
-export default App;
- */
-
 import React, { useState } from 'react';
 import axios from 'axios';
 import './App.css';
+
+const BASE_URL = 'https://5578-34-138-211-45.ngrok-free.app';
+
 function App() {
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [targetLang, setTargetLang] = useState('');
   const [loading, setLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState('');
+
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const checkStatus = async () => {
+    while (true) {
+      try {
+        const res = await axios.get(`${BASE_URL}/check_status`);
+
+        if (res.data.status === 'completed') {
+          setVideoUrl(`${BASE_URL}/static/final_video.mp4`);
+          setLoading(false);
+          break;
+        }
+      } catch (err) {
+        console.error('Status check failed:', err);
+      }
+
+      await sleep(3000); // check every 3 seconds
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -115,28 +36,29 @@ function App() {
     setVideoUrl('');
 
     try {
-      const response = await axios.post('https://2e38-34-138-211-45.ngrok-free.app', {
+      await axios.post(`${BASE_URL}/submit`, {
         youtube_url: youtubeUrl,
-        target_lang: targetLang
+        target_lang: targetLang,
       });
 
-      setVideoUrl(response.data.video_url);
+      // Start polling for completion
+      await checkStatus();
     } catch (error) {
       console.error('Error submitting:', error);
-      alert('Something went wrong. Please check console.');
+      alert('Something went wrong. Check console.');
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
     <div className="container">
       <h1>Lip-Sync Video Translator</h1>
-      <h4>Enter the Youtube URL and Preferred Language Code</h4>
+      <h4>Enter YouTube URL and Target Language</h4>
+
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="Enter YouTube URL"
+          placeholder="YouTube URL"
           value={youtubeUrl}
           onChange={(e) => setYoutubeUrl(e.target.value)}
           required
@@ -144,7 +66,7 @@ function App() {
 
         <input
           type="text"
-          placeholder="Target Language Code (e.g., fr, de, es)"
+          placeholder="Language (e.g., fr, de, es)"
           value={targetLang}
           onChange={(e) => setTargetLang(e.target.value)}
           required
@@ -155,11 +77,17 @@ function App() {
         </button>
       </form>
 
+      {loading && <p>Processing video... please wait ⏳</p>}
+
       {videoUrl && (
         <div className="videoContainer">
-          <h2>Translated Lip-Synced Video:</h2>
+          <h2>Translated Video:</h2>
           <video controls width="500" src={videoUrl} />
-          <p><a href={videoUrl} download>Download Video</a></p>
+          <p>
+            <a href={videoUrl} download>
+              Download Video
+            </a>
+          </p>
         </div>
       )}
     </div>
