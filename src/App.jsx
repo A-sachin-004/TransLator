@@ -4,6 +4,12 @@ import './App.css';
 
 const BASE_URL = 'https://75ae-34-158-37-66.ngrok-free.app';
 
+const axiosConfig = {
+  headers: {
+    'ngrok-skip-browser-warning': 'true'
+  }
+};
+
 function App() {
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [targetLang, setTargetLang] = useState('');
@@ -12,24 +18,31 @@ function App() {
   const [statusMsg, setStatusMsg] = useState('');
   const [error, setError] = useState('');
 
-  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const checkStatus = async () => {
     while (true) {
-      const res = await axios.get(`${BASE_URL}/check_status`);
+      try {
+        const res = await axios.get(
+          `${BASE_URL}/check_status`,
+          axiosConfig
+        );
 
-      setStatusMsg(res.data.message);
+        setStatusMsg(res.data.message);
 
-      if (res.data.status === 'completed') {
-        setVideoUrl(`${BASE_URL}${res.data.video_url}?t=${Date.now()}`);
-        setLoading(false);
-        break;
-      }
+        if (res.data.status === 'completed') {
+          setVideoUrl(`${BASE_URL}/static/final_video.mp4?t=${Date.now()}`);
+          setLoading(false);
+          break;
+        }
 
-      if (res.data.status === 'error') {
-        setError(res.data.error);
-        setLoading(false);
-        break;
+        if (res.data.status === 'error') {
+          setError(res.data.error || 'Something went wrong.');
+          setLoading(false);
+          break;
+        }
+      } catch (err) {
+        console.error('Status check failed:', err);
       }
 
       await sleep(3000);
@@ -45,49 +58,68 @@ function App() {
     setStatusMsg('Starting...');
 
     try {
-      await axios.post(`${BASE_URL}/submit`, {
-        youtube_url: youtubeUrl,
-        target_lang: targetLang
-      });
+      await axios.post(
+        `${BASE_URL}/submit`,
+        {
+          youtube_url: youtubeUrl,
+          target_lang: targetLang,
+        },
+        axiosConfig
+      );
 
-      checkStatus();
+      await checkStatus();
     } catch (err) {
-      setError('Server error');
+      console.error('Error submitting:', err);
+      setError('Failed to connect to server. Is the Colab running?');
       setLoading(false);
     }
   };
 
   return (
     <div className="container">
-      <h1>Lip-Sync Translator</h1>
+      <h1>Lip-Sync Video Translator</h1>
+      <h4>Enter YouTube URL and Target Language</h4>
 
       <form onSubmit={handleSubmit}>
         <input
+          type="text"
+          placeholder="YouTube URL"
           value={youtubeUrl}
           onChange={(e) => setYoutubeUrl(e.target.value)}
-          placeholder="YouTube URL"
+          required
+          disabled={loading}
         />
 
         <input
+          type="text"
+          placeholder="Language (e.g., fr, de, es)"
           value={targetLang}
           onChange={(e) => setTargetLang(e.target.value)}
-          placeholder="Language (fr, de, es)"
+          required
+          disabled={loading}
         />
 
-        <button disabled={loading}>
-          {loading ? "Processing..." : "Submit"}
+        <button type="submit" disabled={loading}>
+          {loading ? 'Processing...' : 'Submit'}
         </button>
       </form>
 
-      {loading && <p>⏳ {statusMsg}</p>}
-      {error && <p style={{color:'red'}}>❌ {error}</p>}
+      {loading && (
+        <p>⏳ {statusMsg || 'Processing video... please wait'}</p>
+      )}
+
+      {error && (
+        <p style={{ color: 'red' }}>❌ {error}</p>
+      )}
 
       {videoUrl && (
-        <div>
+        <div className="videoContainer">
           <h2>Translated Video:</h2>
-          <video controls width="500">
-            <source src={videoUrl} type="video/mp4" />
-          </video>
+          <video
+            controls
+            width="500"
+            src={videoUrl}
+          />
         </div>
       )}
     </div>
