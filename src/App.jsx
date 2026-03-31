@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './App.css';
 
-const BASE_URL = 'https://75ae-34-158-37-66.ngrok-free.app';
+const BASE_URL = 'https://54ff-34-158-37-66.ngrok-free.app';
 
 const axiosConfig = {
   headers: {
