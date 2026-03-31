@@ -121,6 +121,9 @@ function App() {
             src={videoUrl}
           />
         </div>
+      <video controls width="500">
+  <source src="/final_video (6).mp4" type="video/mp4" />
+    </video>
       )}
     </div>
   );
