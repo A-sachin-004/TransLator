@@ -23,7 +23,10 @@ function App() {
   const checkStatus = async () => {
     while (true) {
       try {
-        const res = await axios.get(`${BASE_URL}/check_status`, axiosConfig);
+        const res = await axios.get(
+          `${BASE_URL}/check_status`,
+          axiosConfig
+        );
 
         setStatusMsg(res.data.message);
 
@@ -109,15 +112,17 @@ function App() {
         <p style={{ color: 'red' }}>❌ {error}</p>
       )}
 
-      {/* ✅ ALWAYS SHOW VIDEO (Hardcoded for testing) */}
-      <div className="videoContainer">
-        <h2>Translated Video:</h2>
-        <video
-          controls
-          width="500"
-          src="https://b984-34-158-37-66.ngrok-free.app/static/final_video.mp4"
-        />
-      </div>
+      {videoUrl && (
+        <div className="videoContainer">
+          <h2>Translated Video:</h2>
+          <video
+            controls
+            width="500"
+            src={videoUrl}
+            crossOrigin="anonymous"
+          />
+        </div>
+      )}
     </div>
   );
 }
