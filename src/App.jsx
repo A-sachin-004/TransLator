@@ -2,31 +2,48 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './App.css';
 
-const BASE_URL = 'https://5997-34-186-19-255.ngrok-free.app';
+const BASE_URL = 'https://5a1c-34-158-37-66.ngrok-free.app';
+
+const axiosConfig = {
+  headers: {
+    'ngrok-skip-browser-warning': 'true'
+  }
+};
 
 function App() {
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [targetLang, setTargetLang] = useState('');
   const [loading, setLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState('');
+  const [statusMsg, setStatusMsg] = useState('');
+  const [error, setError] = useState('');
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const checkStatus = async () => {
     while (true) {
       try {
-        const res = await axios.get(`${BASE_URL}/check_status`);
+        const res = await axios.get(`${BASE_URL}/check_status`, axiosConfig);
+
+        setStatusMsg(res.data.message);
 
         if (res.data.status === 'completed') {
           setVideoUrl(`${BASE_URL}/static/final_video.mp4`);
           setLoading(false);
           break;
         }
+
+        if (res.data.status === 'error') {
+          setError(res.data.error || 'Something went wrong.');
+          setLoading(false);
+          break;
+        }
+
       } catch (err) {
         console.error('Status check failed:', err);
       }
 
-      await sleep(3000); // check every 3 seconds
+      await sleep(3000);
     }
   };
 
@@ -34,18 +51,19 @@ function App() {
     e.preventDefault();
     setLoading(true);
     setVideoUrl('');
+    setError('');
+    setStatusMsg('Starting...');
 
     try {
       await axios.post(`${BASE_URL}/submit`, {
         youtube_url: youtubeUrl,
         target_lang: targetLang,
-      });
+      }, axiosConfig);
 
-      // Start polling for completion
       await checkStatus();
-    } catch (error) {
-      console.error('Error submitting:', error);
-      alert('Something went wrong. Check console.');
+    } catch (err) {
+      console.error('Error submitting:', err);
+      setError('Failed to connect to server. Is the Colab running?');
       setLoading(false);
     }
   };
@@ -62,6 +80,7 @@ function App() {
           value={youtubeUrl}
           onChange={(e) => setYoutubeUrl(e.target.value)}
           required
+          disabled={loading}
         />
 
         <input
@@ -70,6 +89,7 @@ function App() {
           value={targetLang}
           onChange={(e) => setTargetLang(e.target.value)}
           required
+          disabled={loading}
         />
 
         <button type="submit" disabled={loading}>
@@ -77,17 +97,23 @@ function App() {
         </button>
       </form>
 
-      {loading && <p>Processing video... please wait ⏳</p>}
+      {loading && (
+        <p>⏳ {statusMsg || 'Processing video... please wait'}</p>
+      )}
+
+      {error && (
+        <p style={{ color: 'red' }}>❌ {error}</p>
+      )}
 
       {videoUrl && (
         <div className="videoContainer">
           <h2>Translated Video:</h2>
-          <video controls width="500" src={videoUrl} />
-          <p>
-            <a href={videoUrl} download>
-              Download Video
-            </a>
-          </p>
+          <video
+            controls
+            width="500"
+            src={videoUrl}
+            crossOrigin="anonymous"
+          />
         </div>
       )}
     </div>
