@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './App.css';
 
-const BASE_URL = 'https://d29b-34-158-37-66.ngrok-free.app';
+const BASE_URL = 'https://b984-34-158-37-66.ngrok-free.app';
 
 const axiosConfig = {
   headers: {
@@ -23,15 +23,12 @@ function App() {
   const checkStatus = async () => {
     while (true) {
       try {
-        const res = await axios.get(
-          `${BASE_URL}/check_status`,
-          axiosConfig
-        );
+        const res = await axios.get(`${BASE_URL}/check_status`, axiosConfig);
 
         setStatusMsg(res.data.message);
 
         if (res.data.status === 'completed') {
-          setVideoUrl(`${BASE_URL}/static/final_video.mp4?t=${Date.now()}`);
+          setVideoUrl(`${BASE_URL}/static/final_video.mp4`);
           setLoading(false);
           break;
         }
@@ -112,16 +109,15 @@ function App() {
         <p style={{ color: 'red' }}>❌ {error}</p>
       )}
 
-      {videoUrl && (
-        <div className="videoContainer">
-          <h2>Translated Video:</h2>
-          <video
-            controls
-            width="500"
-            src={videoUrl}
-          />
-        </div>
-            )}
+      {/* ✅ ALWAYS SHOW VIDEO (Hardcoded for testing) */}
+      <div className="videoContainer">
+        <h2>Translated Video:</h2>
+        <video
+          controls
+          width="500"
+          src="https://b984-34-158-37-66.ngrok-free.app/static/final_video.mp4"
+        />
+      </div>
     </div>
   );
 }
